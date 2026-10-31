@@ -2,7 +2,7 @@
   "host": "127.0.0.1",
   "port": 8080,
   "entur_client_name": "oslo-skjerm",
-  "met_user_agent": "oslo-skjerm/1.0 (kontakt: bytt-til-din-epost-eller-side)",
+  "met_user_agent": "oslo-skjerm/1.0 (kontakt: joardalelanda@gmail.com)",
   "lat": 59.9139,
   "lon": 10.7522,
   "stopp": [
