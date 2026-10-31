@@ -1,0 +1,198 @@
+<!doctype html>
+<html lang="no">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Oslo nå</title>
+<style>
+  :root {
+    --bg: #0e1116;
+    --kort: #171c24;
+    --linje: #252c38;
+    --tekst: #f2f4f7;
+    --dempet: #8b96a5;
+    --aksent: #f5b700;
+    --sen: #ff7a7a;
+    --sanntid: #4cd38a;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; background: var(--bg); color: var(--tekst);
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans", sans-serif; }
+  body { display: flex; flex-direction: column; padding: 2.2vh 2.4vw; gap: 2vh; overflow: hidden; }
+
+  header { display: flex; justify-content: space-between; align-items: baseline; gap: 2vw; }
+  header h1 { margin: 0; font-size: 4vh; font-weight: 600; letter-spacing: 0.02em; }
+  header .dato { color: var(--dempet); font-size: 2.4vh; text-transform: capitalize; }
+  header .klokke { font-size: 6vh; font-weight: 300; font-variant-numeric: tabular-nums; }
+
+  .feil { background: #3a1d1d; color: #ffd0d0; padding: 1vh 1.4vw; border-radius: 8px; font-size: 2vh; }
+
+  main { flex: 1; display: grid; gap: 2vw; grid-template-columns: 1fr 1.25fr 1.25fr; min-height: 0; }
+
+  .kort { background: var(--kort); border-radius: 14px; padding: 2.4vh 1.8vw; display: flex; flex-direction: column; min-height: 0; }
+  .kort h2 { margin: 0 0 1.6vh; font-size: 2.6vh; font-weight: 600; color: var(--dempet);
+    text-transform: uppercase; letter-spacing: 0.08em; }
+
+  /* Vær */
+  .vaer-naa { display: flex; align-items: center; gap: 1.4vw; }
+  .vaer-naa .emoji { font-size: 12vh; line-height: 1; }
+  .vaer-naa .temp { font-size: 12vh; font-weight: 300; line-height: 1; font-variant-numeric: tabular-nums; }
+  .vaer-naa .tekst { font-size: 3vh; color: var(--dempet); margin-top: 0.8vh; }
+  .vaer-dag { margin-top: 2.4vh; font-size: 2.6vh; display: grid; grid-template-columns: 1fr 1fr; gap: 1.2vh 1vw; }
+  .vaer-dag .etikett { color: var(--dempet); font-size: 2vh; }
+  .vaer-dag .verdi { font-size: 3vh; font-variant-numeric: tabular-nums; }
+  .vaer-timer { margin-top: auto; display: grid; grid-template-columns: repeat(5, 1fr); gap: 0.6vw; text-align: center; }
+  .vaer-timer div { background: var(--linje); border-radius: 10px; padding: 1.2vh 0; }
+  .vaer-timer .tid { font-size: 2vh; color: var(--dempet); }
+  .vaer-timer .s { font-size: 4vh; }
+  .vaer-timer .t { font-size: 2.6vh; font-variant-numeric: tabular-nums; }
+
+  /* Avganger */
+  .avgang-liste { list-style: none; margin: 0; padding: 0; overflow: hidden; flex: 1; }
+  .avgang { display: grid; grid-template-columns: 9.5vh 1fr auto; align-items: center; gap: 1vw;
+    padding: 1.3vh 0; border-top: 1px solid var(--linje); }
+  .avgang:first-child { border-top: none; }
+  .avgang .kl { font-size: 4.2vh; font-weight: 600; font-variant-numeric: tabular-nums; }
+  .avgang .kl .plan { display: block; font-size: 1.8vh; font-weight: 400; color: var(--sen); text-decoration: line-through; }
+  .avgang .mid { display: flex; align-items: center; gap: 0.8vw; min-width: 0; }
+  .avgang .linje { flex: none; min-width: 5.2vh; text-align: center; padding: 0.6vh 0.6vw; border-radius: 8px;
+    background: var(--aksent); color: #111; font-weight: 700; font-size: 2.6vh; }
+  .avgang .retning { font-size: 3vh; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .avgang .om { font-size: 3vh; font-variant-numeric: tabular-nums; color: var(--dempet); text-align: right; white-space: nowrap; }
+  .avgang .om.nå { color: var(--sanntid); font-weight: 600; }
+  .sanntid-prikk { display: inline-block; width: 0.9vh; height: 0.9vh; border-radius: 50%; background: var(--sanntid); margin-left: 0.4vw; vertical-align: middle; }
+  .tomt { color: var(--dempet); font-size: 2.6vh; padding: 2vh 0; }
+
+  footer { color: var(--dempet); font-size: 1.8vh; display: flex; justify-content: space-between; }
+
+  /* Smale skjermer / telefon */
+  @media (max-width: 900px) {
+    body { overflow: auto; height: auto; }
+    main { grid-template-columns: 1fr; }
+    header h1 { font-size: 3.2vh; }
+  }
+</style>
+</head>
+<body>
+  <header>
+    <div>
+      <h1>Oslo nå</h1>
+      <div class="dato" id="dato"></div>
+    </div>
+    <div class="klokke" id="klokke"></div>
+  </header>
+
+  <div id="feil" class="feil" hidden></div>
+
+  <main>
+    <section class="kort" aria-labelledby="vaer-tittel">
+      <h2 id="vaer-tittel">Vær i Oslo</h2>
+      <div id="vaer"><div class="tomt">Henter vær …</div></div>
+    </section>
+    <section class="kort" id="stasjon-0" aria-label="Avganger"></section>
+    <section class="kort" id="stasjon-1" aria-label="Avganger"></section>
+  </main>
+
+  <footer>
+    <span id="oppdatert"></span>
+    <span>Data: Entur (avganger) · MET Norway (vær)</span>
+  </footer>
+
+<script>
+  const OSLO = "Europe/Oslo";
+  const MODUS = { metro: "🚇", rail: "🚆", bus: "🚌", tram: "🚋", water: "⛴️", coach: "🚍", air: "✈️" };
+  let data = null;
+
+  const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => (
+    { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+
+  const klokkeTid = (iso) => new Date(iso).toLocaleTimeString("nb-NO", { hour: "2-digit", minute: "2-digit", timeZone: OSLO });
+  const minutterTil = (iso, na) => Math.round((new Date(iso) - na) / 60000);
+
+  function tegnKlokke() {
+    const na = new Date();
+    document.getElementById("klokke").textContent = na.toLocaleTimeString("nb-NO", { hour: "2-digit", minute: "2-digit", timeZone: OSLO });
+    document.getElementById("dato").textContent = na.toLocaleDateString("nb-NO", { weekday: "long", day: "numeric", month: "long", timeZone: OSLO });
+  }
+
+  function tegnVaer(vaer) {
+    const el = document.getElementById("vaer");
+    if (!vaer) { el.innerHTML = '<div class="tomt">Ingen værdata ennå</div>'; return; }
+    const d = vaer.i_dag;
+    const timer = (vaer.timer || []).map((t) => `
+      <div>
+        <div class="tid">${esc(t.tid)}</div>
+        <div class="s">${esc(t.symbol)}</div>
+        <div class="t">${Math.round(t.temp)}°</div>
+      </div>`).join("");
+    el.innerHTML = `
+      <div class="vaer-naa">
+        <div class="emoji">${esc(vaer.naa.symbol)}</div>
+        <div>
+          <div class="temp">${Math.round(vaer.naa.temp)}°</div>
+          <div class="tekst">${esc(vaer.naa.tekst)}</div>
+        </div>
+      </div>
+      <div class="vaer-dag">
+        <div><div class="etikett">Høyest resten av dagen</div><div class="verdi">${d.hoyest == null ? "–" : Math.round(d.hoyest) + "°"}</div></div>
+        <div><div class="etikett">Lavest resten av dagen</div><div class="verdi">${d.lavest == null ? "–" : Math.round(d.lavest) + "°"}</div></div>
+        <div><div class="etikett">Nedbør resten av dagen</div><div class="verdi">${d.nedbor} mm</div></div>
+      </div>
+      <div class="vaer-timer">${timer}</div>`;
+  }
+
+  function tegnStasjon(el, stasjon) {
+    if (!stasjon) { el.innerHTML = '<h2>Laster …</h2>'; return; }
+    const na = new Date();
+    const rader = stasjon.avganger.map((a) => {
+      const min = minutterTil(a.forventet, na);
+      const forsinket = a.planlagt !== a.forventet && (new Date(a.forventet) - new Date(a.planlagt)) > 60000;
+      const om = min <= 0 ? "nå" : `${min} min`;
+      return `
+        <li class="avgang">
+          <div class="kl">${klokkeTid(a.forventet)}${forsinket ? `<span class="plan">${klokkeTid(a.planlagt)}</span>` : ""}</div>
+          <div class="mid">
+            <span class="linje">${esc(a.linje)}</span>
+            <span>${MODUS[a.transport] || ""}</span>
+            <span class="retning">${esc(a.retning)}${a.sanntid ? '<span class="sanntid-prikk" title="Sanntid"></span>' : ""}</span>
+          </div>
+          <div class="om ${min <= 0 ? "nå" : ""}">${om}</div>
+        </li>`;
+    }).join("");
+    el.innerHTML = `
+      <h2>${esc(stasjon.navn)}</h2>
+      <ul class="avgang-liste">${rader || '<li class="tomt">Ingen avganger de neste timene</li>'}</ul>`;
+  }
+
+  function tegnAlt() {
+    if (!data) return;
+    const feil = document.getElementById("feil");
+    feil.hidden = !(data.feil && data.feil.length);
+    feil.textContent = data.feil && data.feil.length ? "Kunne ikke hente: " + data.feil.join(" · ") : "";
+    tegnVaer(data.vaer);
+    tegnStasjon(document.getElementById("stasjon-0"), data.stasjoner[0]);
+    tegnStasjon(document.getElementById("stasjon-1"), data.stasjoner[1]);
+    document.getElementById("oppdatert").textContent = data.oppdatert
+      ? "Oppdatert " + klokkeTid(data.oppdatert) : "";
+  }
+
+  async function hentData() {
+    try {
+      const svar = await fetch("/api/data", { cache: "no-store" });
+      data = await svar.json();
+      tegnAlt();
+    } catch (e) {
+      const feil = document.getElementById("feil");
+      feil.hidden = false;
+      feil.textContent = "Får ikke kontakt med tjeneren på denne maskinen. Prøver igjen …";
+    }
+  }
+
+  tegnKlokke();
+  hentData();
+  setInterval(tegnKlokke, 1000);
+  setInterval(tegnAlt, 15000);   // oppdaterer "om X min" uten nytt API-kall
+  setInterval(hentData, 30000);  // henter nye data fra serveren
+</script>
+</body>
+</html>
